@@ -21,32 +21,34 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.metrics import classification_report
-from sklearn.metrics import multilabel_confusion_matrix
-from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.metrics import precision_recall_fscore_support
-
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.multiclass import OneVsRestClassifier
 
 database_filepath = '../data/DisasterResponse.db'
 
 
 def load_data(database_filepath):
+    '''This function loads data from sqlite database and returns 3 calues:
+    1. X - This is a dataframe containing disaster messages
+    2. Y - This is dataframe containing 36 categories
+    3. categoriy_names - This is a list of categories of Y'''
     # load data from database
     conn = sqlite3.connect(database_filepath)
     df = pd.read_sql('SELECT * FROM DisasterTable', conn)
 
     X = df[['message']]
-    y = df[df.columns.difference(['id', 'message', 'original', 'genre'])]
+    Y = df[df.columns.difference(['id', 'message', 'original', 'genre'])]
     category_names = list(y.columns.values)
     
-    return X,y,category_names
+    return X,Y,category_names
 
 
 def tokenize(text):
+    '''Tokenize Funtion -
+    1. Removes Punctuation from text
+    2. Tokenizes the text
+    3. Removes Stop words from english language
+    4. Lemmatizes tokens
+    5. Returns clean tokens'''
     # normalize case and remove punctuation
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     
@@ -71,6 +73,8 @@ def tokenize(text):
 
 
 def build_model():
+    ''' This funtion uses a RandomForest Classifer and builds a pipeline using tokenizer, 
+    TfidTransformer and MultioutputClassifier'''
     forest = RandomForestClassifier(n_estimators=10, random_state=1)
     
     pipeline = Pipeline([
@@ -80,21 +84,14 @@ def build_model():
 ]) 
 
     return pipeline
-
-
-def evaluate_model(model, X_test, Y_test, category_names):
-    for category in category_names:
-        print("Precision            Recall               fScore")
-        print(precision_recall_fscore_support(Y_test[category], model.predict(X_test), average='weighted'))
-    #m = MultiLabelBinarizer().fit(Y_test.to_numpy())
-    #print(precision_recall_fscore_support(m.transform(Y_test.to_numpy()), m.transform(model.predict(X_test)), average='weighted'))
-
+    
 def save_model(model, model_filepath):
+    '''Saves the model to model_filepath provided'''
     pickle.dump(model, open(model_filepath + "/classifier.pkl", 'wb'))
     pass
 
 def display_results(y_test, y_pred):
-    
+    '''Scores the model for each of the 36 categories'''
     for category in y_test.columns.values:
         print('**Processing {} comments...**'.format(category))
     
