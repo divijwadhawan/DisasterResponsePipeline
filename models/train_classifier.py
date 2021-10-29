@@ -26,6 +26,11 @@ from sklearn.metrics import multilabel_confusion_matrix
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.metrics import precision_recall_fscore_support
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.multiclass import OneVsRestClassifier
+
 database_filepath = '../data/DisasterResponse.db'
 
 
@@ -48,6 +53,8 @@ def tokenize(text):
     # tokenize text
     tokens = word_tokenize(text)
     
+    # define stop words
+    stop_words = stopwords.words('english')
     
     # lemmatize and remove stop words
     #tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
@@ -57,31 +64,44 @@ def tokenize(text):
     clean_tokens = []
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
+        if clean_tok not in stop_words:
+            clean_tokens.append(clean_tok)
 
     return clean_tokens
 
 
-def build_model(X_train, y_train):
+def build_model():
     forest = RandomForestClassifier(n_estimators=10, random_state=1)
     
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
-        ('clf' , MultiOutputClassifier(forest))
-    ])
+    ('vect', CountVectorizer(tokenizer=tokenize)),
+    ('tfidf', TfidfTransformer()),
+    ('clf' , MultiOutputClassifier(forest))
+]) 
 
     return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    m = MultiLabelBinarizer().fit(Y_test.to_numpy())
-    print(precision_recall_fscore_support(m.transform(Y_test.to_numpy()), m.transform(model.predict(X_test)), average='weighted'))
+    for category in category_names:
+        print("Precision            Recall               fScore")
+        print(precision_recall_fscore_support(Y_test[category], model.predict(X_test), average='weighted'))
+    #m = MultiLabelBinarizer().fit(Y_test.to_numpy())
+    #print(precision_recall_fscore_support(m.transform(Y_test.to_numpy()), m.transform(model.predict(X_test)), average='weighted'))
 
 def save_model(model, model_filepath):
     pickle.dump(model, open(model_filepath + "/classifier.pkl", 'wb'))
     pass
 
+def display_results(y_test, y_pred):
+    
+    for category in y_test.columns.values:
+        print('**Processing {} comments...**'.format(category))
+    
+        # calculating test accuracy
+        print("Precision            Recall               fScore")
+        print(precision_recall_fscore_support(y_test[category], y_pred[category], average='weighted'))
+        print("\n")
 
 def main():
     if len(sys.argv) == 3:
@@ -91,14 +111,18 @@ def main():
         X_train, X_test, Y_train, Y_test = train_test_split(X['message'], Y, test_size=0.2)
         
         print('Building model...')
-        model = build_model(X_train, Y_train)
+        model = build_model()
         
         print('Training model...')
         # train classifier
         model.fit(X_train, Y_train)
-        
+
+        print('Predicting test data...')
+        prediction = model.predict(X_test)
+    
+        # calculating test accuracy
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        display_results(Y_test, pd.DataFrame(data=prediction, columns=Y.columns.values))
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
