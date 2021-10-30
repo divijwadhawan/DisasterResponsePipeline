@@ -22,9 +22,29 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics import precision_recall_fscore_support
+from sklearn.svm import SVC
+from sklearn import tree
+from sklearn.base import BaseEstimator, TransformerMixin
 
 database_filepath = '../data/DisasterResponse.db'
 
+class StartingVerbExtractor(BaseEstimator, TransformerMixin):
+
+    def starting_verb(self, text):
+        sentence_list = nltk.sent_tokenize(text)
+        for sentence in sentence_list:
+            pos_tags = nltk.pos_tag(tokenize(sentence))
+            first_word, first_tag = pos_tags[0]
+            if first_tag in ['VB', 'VBP'] or first_word == 'RT':
+                return True
+        return False
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, X):
+        X_tagged = pd.Series(X).apply(self.starting_verb)
+        return pd.DataFrame(X_tagged)
 
 def load_data(database_filepath):
     '''This function loads data from sqlite database and returns 3 calues:
@@ -37,7 +57,7 @@ def load_data(database_filepath):
 
     X = df[['message']]
     Y = df[df.columns.difference(['id', 'message', 'original', 'genre'])]
-    category_names = list(y.columns.values)
+    category_names = list(Y.columns.values)
     
     return X,Y,category_names
 
@@ -73,15 +93,33 @@ def tokenize(text):
 
 
 def build_model():
-    ''' This funtion uses a RandomForest Classifer and builds a pipeline using tokenizer, 
+    ''' This funtion uses a Decision Tree Classifer and builds a pipeline using tokenizer, 
     TfidTransformer and MultioutputClassifier'''
-    forest = RandomForestClassifier(n_estimators=10, random_state=1)
-    
+    #forest = RandomForestClassifier(n_estimators=10, random_state=1)
+    #svc = SVC(gamma="scale")
+
     pipeline = Pipeline([
     ('vect', CountVectorizer(tokenizer=tokenize)),
     ('tfidf', TfidfTransformer()),
-    ('clf' , MultiOutputClassifier(forest))
-]) 
+    ('clf' , MultiOutputClassifier(tree.DecisionTreeClassifier()))
+    ])
+
+    # specify parameters for grid search
+##    parameters = {
+##        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+##        'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
+##        'features__text_pipeline__vect__max_features': (None, 5000, 10000),
+##        'features__text_pipeline__tfidf__use_idf': (True, False)
+##        'clf__n_estimators': [5, 10, 15],
+##        'clf__min_samples_split': [2, 3, 4],
+##        'features__transformer_weights': (
+##            {'text_pipeline': 1, 'starting_verb': 0.5},
+##            {'text_pipeline': 0.5, 'starting_verb': 1},
+##            {'text_pipeline': 0.8, 'starting_verb': 1},
+##        )
+##    }
+
+##    cv = GridSearchCV(pipeline, param_grid=parameters)
 
     return pipeline
     
