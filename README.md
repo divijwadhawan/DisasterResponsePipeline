@@ -8,29 +8,66 @@
 
 3. Data is read from this sqlite database and converted into tokens
 
-4. Data is split into train and test, then trainied using RandomForest multiclass classifier
+4. Data is split into train and test, then trainied using Decision Tree multiclass classifier
 
 5. Results are displayed using a flask web app and user can also categorize his own text using this app
 
-## Description (WIP)
+## Repository Structure
+1.  app
+* template
+    - master.html  # main page of web app
+    - go.html  # classification result page of web app
+* run.py  # Flask file that runs app
 
-This project is part of Udacity Nanodegree. So someone who just started out with data science and is looking to explore a simple code that takes you from level 1 to level 2 in data science, this project is then for you.
+2. data
+* disaster_categories.csv  # data to process 
+* disaster_messages.csv  # data to process
+* process_data.py
+* InsertDatabaseName.db   # database to save clean data to
 
-This 1 python file -
-* Inputs Data
-* Processes and Cleans relevant information
-* Does basic descriptive analytics
-* Predicts price of listing using a neural network regression model
+3. models
+* train_classifier.py
+* classifier.pkl  # saved model 
 
-## Getting Started (WIP)
+- README.md
+
+## How to run
+
+1. Step 1 is to create DisasterResponse.db which can be done executing process_data.py in data folder which can be done with arguments in this way -
+python process_data.py disaster_messages.csv disaster_categories.csv DisasterResponse.db
+
+2. Step 2 is to build and save the model which can be done this way -
+python train_classifier.py ../data/DisasterResponse.db classifier.pkl
+
+3. Step 3 is to execute run.py flask app -
+
+Open a new terminal window. You should already be in the workspace folder, but if not, then use terminal commands to navigate inside the folder with the run.py file.
+
+Type in the command line:
+
+* python run.py *
+
+Your web app should now be running if there were no errors.
+
+Now, open another Terminal Window.
+
+Type
+
+* env|grep WORK *
+
+In a new web browser window, type in the following:
+
+https://SPACEID-3001.SPACEDOMAIN
+
+## Getting Started
 
 ### Dependencies
 
 * Windows, Mac, Linux
 * Latest Python Release
-* Libraries - pandas, numpy, matlibplot, tensorflow, keras, sklearn (all these libraries can be installed using pip command)
+* Libraries - sqlalchemy, sqlite3, nltk, re, pickle, pandas, numpy, sklearn (all these libraries can be installed using pip command)
 
-### Installing (WIP)
+### Installing
 
 * This is public git project which can be downloaded or cloned
 * Before executing make sure dependencies are installed and necessary files are downloaded from https://www.kaggle.com/airbnb/seattle
@@ -42,7 +79,7 @@ If you need help or facing issues, you can write to wwdivij@gmail.com
 
 ## Authors
 
-[@divijwadhawan](https://linkedin.com/in/divijwadhawan/)
+[@divijwadhawan](https://github.com/divijwadhawan)
 
 ## Version History
 
