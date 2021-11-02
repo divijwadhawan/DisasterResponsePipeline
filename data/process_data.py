@@ -46,6 +46,9 @@ def clean_data(df):
     
         #convert column from string to numeric
         df_categories[column] = df_categories[column].astype(int)
+    
+    #dropping rows where column related value is 2 as this seems a wrong value
+    df_categories = df_categories[df_categories.related != 2]
 
     #dropping original categories column which we already split and saved into a new dataframe df_categories
     df = df.drop(columns=['categories'])
@@ -65,7 +68,7 @@ def clean_data(df):
 def save_data(df, database_filename):
     '''Saves df into database_filename as an sqlite file'''
     engine = create_engine('sqlite:///'+database_filename)
-    df.to_sql('DisasterTable', engine, index=False)  
+    df.to_sql('DisasterTable', engine, index=False, if_exists='replace')  
 
 
 def main():
