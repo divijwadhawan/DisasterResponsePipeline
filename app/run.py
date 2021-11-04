@@ -40,8 +40,11 @@ def index():
     
     # extract data needed for visuals
     # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
+    food_counts = df.groupby('food').count()['message']
+    food_names = list(food_counts.index)
+
+    shelter_counts = df.groupby('shelter').count()['message']
+    shelter_names = list(shelter_counts.index)
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -49,21 +52,41 @@ def index():
         {
             'data': [
                 Bar(
-                    x=genre_names,
-                    y=genre_counts
+                    x=food_names,
+                    y=food_counts
                 )
             ],
 
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': 'Disaster Response with Food catefory',
                 'yaxis': {
-                    'title': "Count"
+                    'title': "Count of Messages"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Food"
+                }
+            }
+        },
+
+        {
+            'data': [
+                Bar(
+                    x=shelter_names,
+                    y=shelter_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Disaster Response with Shelter category',
+                'yaxis': {
+                    'title': "Count of Messages"
+                },
+                'xaxis': {
+                    'title': "Shelter"
                 }
             }
         }
+        
     ]
     
     # encode plotly graphs in JSON

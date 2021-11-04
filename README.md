@@ -39,6 +39,8 @@ python process_data.py disaster_messages.csv disaster_categories.csv DisasterRes
 2. Step 2 is to build and save the model which can be done this way -
 python train_classifier.py ../data/DisasterResponse.db classifier.pkl
 
+Please note that runtime is approximately 40 minutes due to finding best parameters using GridSearch.
+
 3. Step 3 is to execute run.py flask app -
 
 Open a new terminal window. You should already be in the workspace folder, but if not, then use terminal commands to navigate inside the folder with the run.py file.

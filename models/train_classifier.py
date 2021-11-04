@@ -25,6 +25,7 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.svm import SVC
 from sklearn import tree
 from sklearn.base import BaseEstimator, TransformerMixin
+import time
 
 database_filepath = '../data/DisasterResponse.db'
 
@@ -104,10 +105,14 @@ def build_model():
     ('clf' , MultiOutputClassifier(tree.DecisionTreeClassifier()))
     ])
 
+    print("pipeline parameters")
+
+    print(pipeline.get_params())
+
     # specify parameters for grid search
-##    parameters = {
+    parameters = {
 ##        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
-##        'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
+        'vect__max_df': (0.5, 0.75, 1.0)
 ##        'features__text_pipeline__vect__max_features': (None, 5000, 10000),
 ##        'features__text_pipeline__tfidf__use_idf': (True, False)
 ##        'clf__n_estimators': [5, 10, 15],
@@ -117,11 +122,11 @@ def build_model():
 ##            {'text_pipeline': 0.5, 'starting_verb': 1},
 ##            {'text_pipeline': 0.8, 'starting_verb': 1},
 ##        )
-##    }
+    }
 
-##    cv = GridSearchCV(pipeline, param_grid=parameters)
+    cv = GridSearchCV(pipeline, param_grid=parameters)
 
-    return pipeline
+    return cv
     
 def save_model(model, model_filepath):
     '''Saves the model to model_filepath provided'''
@@ -139,14 +144,20 @@ def display_results(y_test, y_pred):
         print("\n")
 
 def main():
+    start = time.time()
+
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
         X_train, X_test, Y_train, Y_test = train_test_split(X['message'], Y, test_size=0.2)
+
+        print(X_train)
+        print(Y_train)
         
         print('Building model...')
         model = build_model()
+
         
         print('Training model...')
         # train classifier
@@ -154,6 +165,7 @@ def main():
 
         print('Predicting test data...')
         prediction = model.predict(X_test)
+
     
         # calculating test accuracy
         print('Evaluating model...')
@@ -169,6 +181,10 @@ def main():
               'as the first argument and the filepath of the pickle file to '\
               'save the model to as the second argument. \n\nExample: python '\
               'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
+    
+    end = time. time()
+    print(end - start)
+    sys.exit()
 
 
 if __name__ == '__main__':
